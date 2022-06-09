@@ -7,19 +7,17 @@
 (in-package :langs.python)
 
 (defvar *gen-output* t)
+(defvar *indent-size* 4)
 
-;; a list of printing instructions, which include
+;; printing instructions are any of:
 ;; - a string literal
 ;; - 'indent
 ;; - 'dedent
 ;; - 'newline
-(defvar *printer-instructions* nil)
-(defvar *indent-size* 4)
-
-(defun printer (instructions)
+(defun printer ()
   (let ((indent-level 0)
         (need-to-indent nil))
-    (loop for i in instructions do
+    (lambda (i)
           (cond
             ((stringp i)
              (when need-to-indent
@@ -31,17 +29,13 @@
             ((eq 'newline i) (format *gen-output* "~%") (setf need-to-indent t))
             (t (error "Unsupported printer instruction: ~S~%" i))))))
 
-;; Emits either a print string instruction or multiple symbol instructions
-(defun emit (ins &rest args)
-  (if (stringp ins)
-    (push (apply #'format nil ins args) *printer-instructions*)
-    (mapcar #'(lambda (i) (push i *printer-instructions*)) (push ins args))))
+(defvar *printer* (printer))
+
+(defun emit (&rest ins)
+  (mapcar #'(lambda (i) (funcall *printer* i)) ins))
 
 (defun python (&rest code)
-  (let ((*printer-instructions* nil)
-        (*print-escape* t))
-    (mapcar #'gen-statement code)
-    (printer (reverse *printer-instructions*))))
+  (mapcar #'gen-statement code))
 
 (defun gen-statements (statements)
   (mapcar #'gen-statement statements))
@@ -59,7 +53,7 @@
 
 (defun gen-expr (expr)
   (if (atom expr)
-    (emit "~S" expr)
+    (emit (format nil "~S" expr))
     (let ((hd (car expr)))
       (cond
         ;; dot operator - equivalent to .
@@ -77,8 +71,7 @@
 
         ;; not
         ((eq '|not| hd)
-         (emit "(")
-         (emit "not ")
+         (emit "(not ")
          (gen-expr (cadr expr))
          (emit ")"))
         ;; tuple
@@ -108,7 +101,7 @@
          (emit "(")
          (loop for cons on (cdr expr)
                do (gen-expr (car cons))
-               when (cdr cons) do (emit " ~a " hd))
+               when (cdr cons) do (emit (format nil " ~a " hd)))
          (emit ")"))
         ;; Function call
         (t
@@ -129,8 +122,7 @@
         ((eq '|if| hd)
          (emit "if ")
          (gen-expr (cadr statement))
-         (emit ":")
-         (emit 'newline 'indent)
+         (emit ":" 'newline 'indent)
          (gen-statements (cddr statement))
          (emit 'dedent 'newline))
         ;; for
@@ -140,16 +132,14 @@
          (emit " in ")
          (assert (eq '|in| (caddr statement)))
          (gen-expr (cadddr statement))
-         (emit ":")
-         (emit 'newline 'indent)
+         (emit ":" 'newline 'indent)
          (gen-statements (cddddr statement))
          (emit 'dedent 'newline))
         ;; while
         ((eq '|while| hd)
          (emit "while ")
          (gen-expr (cadr statement))
-         (emit ":")
-         (emit 'newline 'indent)
+         (emit ":" 'newline 'indent)
          (gen-statements (cddr statement))
          (emit 'dedent 'newline))
         ;; assignment
@@ -165,15 +155,14 @@
          (emit 'newline))
         ;; (def fname (args) body*)
         ((eq '|def| hd)
-         (emit "def ~a(" (cadr statement))
+         (emit (format nil "def ~a(" (cadr statement)))
           (loop for cons on (caddr statement)
-                do (emit "~a" (car cons))
+                do (emit (format nil "~a" (car cons)))
                 when (cdr cons) do (emit ", "))
-          (emit "):")
-          (emit 'newline 'indent)
+          (emit "):" 'newline 'indent)
           (gen-statements (cdddr statement))
           (emit 'dedent 'newline))
-        ;; class
+        ;; TODO: class
         ;; Assume to be an expression
         (t
           (gen-expr statement)

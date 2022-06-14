@@ -5,8 +5,10 @@
   :depends-on ("alexandria" "named-readtables")
   :components ((:module "src"
                 :components
-                ((:file "main")
-                 (:file "python"))))
+                ( (:file "printer")
+                 (:file "python" :depends-on ("printer"))
+                 (:file "blub" :depends-on ("printer"))
+                 (:file "main" :depends-on ("python" "blub")))))
   :description ""
   :in-order-to ((test-op (test-op "langs/tests"))))
 

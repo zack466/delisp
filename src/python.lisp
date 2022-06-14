@@ -1,38 +1,11 @@
 (in-package :cl-user)
 
 (defpackage langs.python
-  (:use :cl :named-readtables)
-  (:export #:syntax))
+  (:use :cl :named-readtables :langs.printer)
+  (:export #:python))
 
+;; (asdf:load-system :langs)
 (in-package :langs.python)
-
-(defvar *gen-output* t)
-(defvar *indent-size* 4)
-
-;; printing instructions are any of:
-;; - a string literal
-;; - 'indent
-;; - 'dedent
-;; - 'newline
-(defun printer ()
-  (let ((indent-level 0)
-        (need-to-indent nil))
-    (lambda (i)
-          (cond
-            ((stringp i)
-             (when need-to-indent
-               (format *gen-output* "~a" (make-string (* *indent-size* indent-level) :initial-element #\Space))
-               (setf need-to-indent nil))
-             (format *gen-output* "~a" i))
-            ((eq 'indent i) (incf indent-level))
-            ((eq 'dedent i) (decf indent-level))
-            ((eq 'newline i) (format *gen-output* "~%") (setf need-to-indent t))
-            (t (error "Unsupported printer instruction: ~S~%" i))))))
-
-(defvar *printer* (printer))
-
-(defun emit (&rest ins)
-  (mapcar #'(lambda (i) (funcall *printer* i)) ins))
 
 (defun python (&rest code)
   (mapcar #'gen-statement code))
@@ -58,9 +31,9 @@
       (cond
         ;; dot operator - equivalent to .
         ((eq '|dot!| hd)
-          (loop for cons on (cdr expr)
-                do (gen-expr (car cons))
-                when (cdr cons) do (emit ".")))
+         (loop for cons on (cdr expr)
+               do (gen-expr (car cons))
+               when (cdr cons) do (emit ".")))
         ;; in
         ((eq '|in| hd)
          (emit "(")
@@ -77,17 +50,17 @@
         ;; tuple
         ((eq '|tuple| hd)
          (emit "(")
-          (loop for cons on (cdr expr)
-                do (gen-expr (car cons))
-                when (cdr cons) do (emit ", "))
-          (emit ")"))
+         (loop for cons on (cdr expr)
+               do (gen-expr (car cons))
+               when (cdr cons) do (emit ", "))
+         (emit ")"))
         ;; list
         ((eq '|list| hd)
          (emit "[")
-          (loop for cons on (cdr expr)
-                do (gen-expr (car cons))
-                when (cdr cons) do (emit ", "))
-          (emit "]"))
+         (loop for cons on (cdr expr)
+               do (gen-expr (car cons))
+               when (cdr cons) do (emit ", "))
+         (emit "]"))
         ;; indexing (elt seq idx)
         ;; TODO: add support for ranges
         ((eq '|elt| hd)
@@ -156,12 +129,12 @@
         ;; (def fname (args) body*)
         ((eq '|def| hd)
          (emit (format nil "def ~a(" (cadr statement)))
-          (loop for cons on (caddr statement)
-                do (emit (format nil "~a" (car cons)))
-                when (cdr cons) do (emit ", "))
-          (emit "):" 'newline 'indent)
-          (gen-statements (cdddr statement))
-          (emit 'dedent 'newline))
+         (loop for cons on (caddr statement)
+               do (emit (format nil "~a" (car cons)))
+               when (cdr cons) do (emit ", "))
+         (emit "):" 'newline 'indent)
+         (gen-statements (cdddr statement))
+         (emit 'dedent 'newline))
         ;; TODO: class
         ;; Assume to be an expression
         (t
@@ -173,23 +146,23 @@
 ;; - excessive parentheses (just use a formatter)
 
 ;; Preserve case sensitivity in the world of Python
-(in-readtable :modern)
+;; (in-readtable :modern)
 
-(PYTHON
-  `(print (+ 1 (* 3 4) 3) 10)
-  `(if (< 10 20) (print "hi"))
-  `(for x in (range 10)
-      (print x))
-  `(while (not (not True))
-      (print (+ "asdf" "fdas")))
-  `(def hello (name x)
-        (print "Hello," name x)
-        (print (+ 1 1)))
-  `(set! x 2)
-  `(set! y 10)
-  `(set! (tuple x y) (tuple y x))
-  `(map int (dot! (input) (split)))
-  `((elt fns 3) 10))
+;; (PYTHON
+;;   `(print (+ 1 (* 3 4) 3) 10)
+;;   `(if (< 10 20) (print "hi"))
+;;   `(for x in (range 10)
+;;         (print x))
+;;   `(while (not (not True))
+;;           (print (+ "asdf" "fdas")))
+;;   `(def hello (name x)
+;;         (print "Hello," name x)
+;;         (print (+ 1 1)))
+;;   `(set! x 2)
+;;   `(set! y 10)
+;;   `(set! (tuple x y) (tuple y x))
+;;   `(map int (dot! (input) (split)))
+;;   `((elt fns 3) 10))
 
 ;; exit case sensitivity
-(IN-READTABLE NIL)
+;; (IN-READTABLE NIL)

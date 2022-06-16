@@ -4,8 +4,7 @@
     #:blub
     #:python
     #:*gen-output*
-    #:main
-    ))
+    #:main))
 (in-package :langs)
 
 (defun dispatch (file-extension)
@@ -27,7 +26,7 @@
 (defun main ()
   (multiple-value-bind (options free-args) (opts:get-opts)
     (when (null free-args)
-      (format t "Usage: lisp <file.ext.lisp>~%")
+      (format t "Usage: delisp <file.ext.lisp>~%")
       (return-from main nil))
     (let* ((filename (car free-args))
            (output-filename (uiop:split-name-type filename))

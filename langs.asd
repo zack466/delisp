@@ -11,7 +11,7 @@
                  (:file "main" :depends-on ("python" "blub")))))
   :description ""
   :build-operation "program-op"
-  :build-pathname "bin/lisp"
+  :build-pathname "bin/delisp"
   :entry-point (symbol-call :langs :main)
   :in-order-to ((test-op (test-op "langs/tests"))))
 

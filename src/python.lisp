@@ -61,15 +61,15 @@
                do (gen-expr (car cons))
                when (cdr cons) do (emit ", "))
          (emit "]"))
-        ;; indexing (elt ssymbol= idx)
-        ;; TODO: add support for ranges
+        ;; indexing (elt arr idx)
+        ;; For slicing, just use the slice function explicitly
         ((symbol= '|elt| hd)
          (gen-expr (cadr expr))
          (emit "[")
          (gen-expr (caddr expr))
          (emit "]"))
         ;; arbitrary lisp code
-        ((symbol= '|lisp| hd)
+        ((symbol= '|,lisp| hd)
          (gen-expr (eval (cons 'progn (cdr expr)))))
         ;; TODO: lambda
         ;; Binary operator (with parentheses to enforce precedence)
@@ -159,8 +159,10 @@
         ;; arbitrary lisp code
         ((symbol= '|#lisp| hd)
          (mapcar #'eval (cdr statement)))
-        ((symbol= '|lisp| hd)
+        ((symbol= '|,lisp| hd)
          (gen-statement (eval (cons 'progn (cdr statement)))))
+        ((symbol= '|,@lisp| hd)
+         (gen-statements (eval (cons 'progn (cdr statement)))))
         ;; declare (use for imports and stuff)
         ((symbol= '|declare| hd)
          (loop for cons on (cdr statement)

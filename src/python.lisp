@@ -150,6 +150,9 @@
          (emit " //= ")
          (gen-expr (caddr statement))
          (emit 'newline))
+        ;; escape arbitrary strings
+        ((symbol= '|#escape| hd)
+         (mapcar #'(lambda (x) (emit x 'newline)) (cdr statement)))
 
         ;; return
         ((symbol= '|return| hd)

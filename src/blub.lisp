@@ -27,7 +27,9 @@
 
 (defun gen-expr (expr &optional (parens nil))
   (if (atom expr)
-    (emit (format nil "~S" expr))
+    (if (stringp expr)
+        (emit (format nil "\"~a\"" expr)) 
+        (emit (format nil "~S" expr)))
     (let ((hd (car expr)))
       (if parens (emit "("))
       (cond
@@ -132,6 +134,28 @@
          (if semicolon (emit ";"))
          (if newline (emit 'newline)))
 
+        ;; +=, -=, *=, /=, and //=
+        ((symbol= '|inc!| hd)
+         (gen-expr (cadr statement))
+         (emit " += ")
+         (gen-expr (caddr statement))
+         (emit ";" 'newline))
+        ((symbol= '|dec!| hd)
+         (gen-expr (cadr statement))
+         (emit " -= ")
+         (gen-expr (caddr statement))
+         (emit ";" 'newline))
+        ((symbol= '|mul!| hd)
+         (gen-expr (cadr statement))
+         (emit " *= ")
+         (gen-expr (caddr statement))
+         (emit ";" 'newline))
+        ((symbol= '|div!| hd)
+         (gen-expr (cadr statement))
+         (emit " /= ")
+         (gen-expr (caddr statement))
+         (emit ";" 'newline))
+
         ;; return
         ((symbol= '|return| hd)
          (emit "return ")
@@ -143,7 +167,18 @@
          (loop for cons on (cdr statement)
                do (emit (format nil "~a" (car cons)))
                when (cdr cons) do (emit " "))
-         (emit ";" 'newline))
+         (if semicolon (emit ";"))
+         (if newline (emit 'newline)))
+
+        ;; useful for preprocesor macros
+        ((symbol= '|#declare| hd)
+         (loop for cons on (cdr statement)
+               do (emit (format nil "~a" (car cons)))
+               when (cdr cons) do (emit " "))
+         (if newline (emit 'newline)))
+        ;; escape arbitrary strings
+        ((symbol= '|#escape| hd)
+         (mapcar #'(lambda (x) (emit x 'newline)) (cdr statement)))
         ;; (def return-type function-name ((type argname)*) body*)
         ((symbol= '|def| hd)
          (gen-function (cdr statement)))
@@ -162,8 +197,9 @@
 
 (defun common-return-p (c)
   (or (symbol= c '|float|) (symbol= c '|vec2|)
-      (symbol= c '|vec3|) (eq c '|vec4|)
-      (symbol= c '|void|)))
+      (symbol= c '|vec3|) (symbol= c '|vec4|)
+      (symbol= c '|void|) (symbol= c '|int|)
+      ))
 
 ;; (return-type function-name ((type argname)*) body*)
 (defun gen-function (statement)

@@ -7,7 +7,7 @@
     #:*printer*
     #:printer
     #:emit
-    #:emit))
+    #:symbol=))
 
 (in-package :langs.printer)
 

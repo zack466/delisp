@@ -1,6 +1,6 @@
 (in-package :cl-user)
 
-(defpackage langs.printer
+(defpackage delisp.printer
   (:use :cl)
   (:export
     #:*gen-output*
@@ -9,7 +9,7 @@
     #:emit
     #:symbol=))
 
-(in-package :langs.printer)
+(in-package :delisp.printer)
 
 (defvar *gen-output* t)
 

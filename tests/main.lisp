@@ -1,10 +1,10 @@
-(defpackage langs/tests/main
+(defpackage delisp/tests/main
   (:use :cl
-        :langs
+        :delisp
         :rove))
-(in-package :langs/tests/main)
+(in-package :delisp/tests/main)
 
-;; NOTE: To run this test file, execute `(asdf:test-system :langs)' in your Lisp.
+;; NOTE: To run this test file, execute `(asdf:test-system :delisp)' in your Lisp.
 
 (deftest test-target-1
   (testing "should (= 1 1) to be true"

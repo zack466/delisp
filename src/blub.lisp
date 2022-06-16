@@ -1,11 +1,11 @@
 (in-package :cl-user)
 
-(defpackage langs.blub
-  (:use :cl :named-readtables :langs.printer)
+(defpackage delisp.blub
+  (:use :cl :named-readtables :delisp.printer)
   (:export #:blub #:blub-toplevel))
 
-;; (asdf:load-system :langs)
-(in-package :langs.blub)
+;; (asdf:load-system :delisp)
+(in-package :delisp.blub)
 
 ;; a generic c-like (static types + imperative) language
 (defmacro blub-toplevel (&rest code)

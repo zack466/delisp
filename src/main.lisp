@@ -1,11 +1,11 @@
-(defpackage langs
-  (:use :cl :langs.blub :langs.python :langs.printer :named-readtables)
+(defpackage delisp
+  (:use :cl :delisp.blub :delisp.python :delisp.printer :named-readtables)
   (:export
     #:blub
     #:python
     #:*gen-output*
     #:main))
-(in-package :langs)
+(in-package :delisp)
 
 (defun dispatch (file-extension)
   (cond ((string= file-extension "frag") #'blub)

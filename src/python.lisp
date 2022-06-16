@@ -1,11 +1,11 @@
 (in-package :cl-user)
 
-(defpackage langs.python
-  (:use :cl :named-readtables :langs.printer)
+(defpackage delisp.python
+  (:use :cl :named-readtables :delisp.printer)
   (:export #:python))
 
-;; (asdf:load-system :langs)
-(in-package :langs.python)
+;; (asdf:load-system :delisp)
+(in-package :delisp.python)
 
 (defun python (code)
   (mapcar #'gen-statement code))

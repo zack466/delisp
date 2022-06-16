@@ -14,7 +14,9 @@
 (defvar *gen-output* t)
 
 (defun symbol= (a b)
-  (string= (symbol-name a) (symbol-name b)))
+  (if (and (symbolp a) (symbolp b))
+      (string= (symbol-name a) (symbol-name b))
+      nil))
 
 ;; printing instructions are any of:
 ;; - a string literal

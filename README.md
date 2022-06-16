@@ -17,8 +17,8 @@ Why would you use this library? So you can have the power of lisp macros in non-
 (while (not (not True))
   (print (+ "asdf" "fdas")))
 
-(def hello (name x)
-  (print "Hello," name x)
+(def hello (name)
+  (print "Hello," name)
   (print (+ 1 1)))
 
 (set! x 2)
@@ -28,18 +28,18 @@ Why would you use this library? So you can have the power of lisp macros in non-
 ```
 produces the following output:
 ```py
-if (10 < 20):
+if 10 < 20:
     print("hi")
 
 for x in range(10):
     print(x)
 
-while (not (not True)):
-    print(("asdf" + "fdas"))
+while not (not True):
+    print("asdf" + "fdas")
 
-def hello(name, x):
-    print("Hello,", name, x)
-    print((1 + 1))
+def hello(name):
+    print("Hello,", name)
+    print(1 + 1)
 
 x = 2
 y = 10

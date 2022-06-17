@@ -1,7 +1,7 @@
 (in-package :cl-user)
 
 (defpackage delisp.blub
-  (:use :cl :named-readtables :delisp.printer)
+  (:use :cl :delisp.printer :delisp.symbols)
   (:export #:blub #:blub-toplevel))
 
 ;; (asdf:load-system :delisp)
@@ -18,18 +18,18 @@
   (mapcar #'gen-statement statements))
 
 (defun binop-p (op)
-  (or (symbol= op '+) (symbol= op '-)
-      (symbol= op '*) (symbol= op '/) 
-      (symbol= op '%) (symbol= op '==)
-      (symbol= op '<) (symbol= op '<=)
-      (symbol= op '>) (symbol= op '>=)
-      (symbol= op '&&) (symbol= op '||)))
+  (or (eq op '+) (eq op '-)
+      (eq op '*) (eq op '/) 
+      (eq op '%) (eq op '==)
+      (eq op '<) (eq op '<=)
+      (eq op '>) (eq op '>=)
+      (eq op '&&) (eq op '||)))
 
 (defun gen-expr (expr &optional (parens nil))
   (if (atom expr)
     (if (stringp expr)
         (emit (format nil "\"~a\"" expr)) 
-        (emit (format nil "~S" expr)))
+        (emit (format nil "~a" expr)))
     (let ((hd (car expr)))
       (if parens (emit "("))
       (cond
@@ -44,13 +44,13 @@
          (gen-expr (cadr expr) t))
 
         ;; indexing (elt seq idx)
-        ((symbol= '|elt| hd)
+        ((symbol= '|elt!| hd)
          (gen-expr (cadr expr))
          (emit "[")
          (gen-expr (caddr expr))
          (emit "]"))
 
-        ((symbol= '|lisp| hd)
+        ((symbol= '|,lisp| hd)
          (gen-expr (eval (cons 'progn (cdr expr)))))
 
         ;; Binary operator (with parentheses to enforce precedence)
@@ -186,10 +186,12 @@
         ((common-return-p hd)
          (gen-function statement))
         ;; escape function for arbitrary lisp code
-        ((symbol= '|#lisp| hd)
+        ((eq '|#lisp| hd)
          (mapcar #'eval (cdr statement)))
-        ((symbol= '|lisp| hd)
+        ((eq '|,lisp| hd)
          (gen-statement (eval (cons 'progn (cdr statement)))))
+        ((eq '|,@lisp| hd)
+         (gen-statements (eval (cons 'progn (cdr statement)))))
         ;; Assume to be an expression
         (t
          (gen-expr statement)

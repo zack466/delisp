@@ -1,5 +1,5 @@
 (defpackage delisp
-  (:use :cl :delisp.blub :delisp.python :delisp.printer :named-readtables)
+  (:use :cl :delisp.blub :delisp.python :delisp.printer)
   (:export
     #:blub
     #:python
@@ -15,9 +15,9 @@
         (t (error "Unrecognized file extension"))))
 
 (defmacro second-value (multiple-values)
-  `(multiple-value-bind (first second)
-       ,multiple-values
-     second))
+  `(multiple-value-bind (first second) ,multiple-values
+    (declare (ignore first))
+    second))
 
 ;; TODO: add error handling
 ;; TODO: make each lang more modular using some sort of meta-language
@@ -25,6 +25,7 @@
 ;; TODO: export language symbols so we can use eq instead of comparing the string value of symbols
 (defun main ()
   (multiple-value-bind (options free-args) (opts:get-opts)
+    (declare (ignore options))
     (when (null free-args)
       (format t "Usage: delisp <file.ext.lisp>~%")
       (return-from main nil))
@@ -32,11 +33,10 @@
            (output-filename (uiop:split-name-type filename))
            (ext (second-value (uiop:split-name-type output-filename)))
            (transpiler (dispatch ext)))
-
-      (in-readtable :modern)
-      (SETF LISP-CODE (UIOP:READ-FILE-FORMS FILENAME))
-
-      (WITH-OPEN-FILE (FOUT OUTPUT-FILENAME :DIRECTION :OUTPUT :IF-EXISTS :SUPERSEDE)
-        (LET ((*GEN-OUTPUT* FOUT))
-          (FUNCALL TRANSPILER LISP-CODE)))
-      (IN-READTABLE NIL))))
+      (with-open-file (fout output-filename :direction :output :if-exists :supersede)
+        (let ((*gen-output* fout))
+          (in-package :delisp.symbols) ;; read in with correct symbols
+          (setf (readtable-case *readtable*) :invert)
+          (setf lisp-code (uiop:read-file-forms filename))
+          (in-package :cl-user) ;; execute in user environment, not :delisp.symbols
+          (funcall transpiler lisp-code))))))

@@ -2,13 +2,14 @@
   :version "0.1.0"
   :author ""
   :license ""
-  :depends-on ("named-readtables" "unix-opts")
+  :depends-on ("unix-opts")
   :components ((:module "src"
                 :components
-                ( (:file "printer")
-                 (:file "python" :depends-on ("printer"))
-                 (:file "blub" :depends-on ("printer"))
-                 (:file "main" :depends-on ("python" "blub")))))
+                ((:file "printer")
+                 (:file "symbols")
+                 (:file "python" :depends-on ("printer" "symbols"))
+                 (:file "blub" :depends-on ("printer" "symbols"))
+                 (:file "main" :depends-on ("python" "blub" "symbols")))))
   :description ""
   :build-operation "program-op"
   :build-pathname "bin/delisp"

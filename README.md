@@ -48,6 +48,8 @@ y = 10
 
 ## Usage
 
+Requirements: `sbcl` and `quicklisp`.
+
 Build the `delisp` executable using `make build`.
 The file will be located in the `bin/` directory of this repo.
 
@@ -56,20 +58,20 @@ Next, write your lisp code and save it to a file in the format `filename.ext.lis
 
 Then, run `delisp filename.ext.lisp`, and the program will produce `filename.ext`.
 
+Currently, the only supported languages are Python and Blub (a generic C-like language).
+
 ## Advanced Usage
 
 To start actually taking advantage of code rewritability, you can use `(|#lisp| <lisp code>)` to run arbitrary lisp code in your program
 
 To insert lisp code into your program, you can insert a single lisp statement/expression using `|,lisp|` or splice in a list of statements using `|,@lisp|`.
 
-Note: due to how the Common Lisp reader works, the lisp code you run must be written in MODERN CASE.
-
 Here is an example:
 ```clojure
 (|#lisp|
-  (SETF CODE (LOOP FOR I FROM 1 TO 5 COLLECT (LIST 'print I))))
+  (setf code (loop for i from 1 to 5 collect (list 'print i))))
 
-(|,@lisp| CODE)
+(|,@lisp| code)
 ```
 Will generate the following:
 ```py

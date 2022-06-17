@@ -126,7 +126,7 @@
          (emit "for ")
          (gen-expr (cadr statement) nil)
          (emit " in ")
-         (assert (eq '|in| (caddr statement)))
+         (assert (eq 'in (caddr statement)))
          (gen-expr (cadddr statement) nil)
          (emit ":" 'newline 'indent)
          (gen-statements (cddddr statement))

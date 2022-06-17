@@ -24,7 +24,7 @@ Why would you use this library? So you can have the power of lisp macros in non-
 (set! x 2)
 (set! y 10)
 
-(set! (tuple x y) (tuple y x))
+(set! (tuple! x y) (tuple! y x))
 ```
 produces the following output:
 ```py

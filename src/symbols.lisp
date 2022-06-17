@@ -29,6 +29,7 @@
     #:|,lisp|
     #:|,@lisp|
     #:if
+    #:else
     #:cond
     #:for
     #:while

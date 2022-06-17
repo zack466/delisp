@@ -106,10 +106,9 @@
         ;; chained if/else
         ;; (cond (test body*)*)
         ((eq 'cond hd)
-         (gen-statement (cons '|if| (cadr statement)) nil)
+         (gen-statement (cons 'if (cadr statement)) nil)
          (loop for cons on (cddr statement)
-               do (if (or (eq '|else| (caar cons))
-                          (eq '|True| (caar cons)))
+               do (if (eq 'else (caar cons))
                       (progn
                         (emit "else: " 'newline 'indent)
                         (gen-statements (cdar cons))

@@ -73,13 +73,30 @@
     (let ((hd (car statement)))
       (cond
         ;; (if <cond> <body>*)
-        ;; TODO: add chaining (elif)
         ((symbol= 'if hd)
          (emit "if (")
          (gen-expr (cadr statement))
          (emit ") {" 'newline 'indent)
          (gen-statements (cddr statement))
-         (emit 'dedent "}" 'newline))
+         (emit 'dedent "}")
+         (if newline (emit 'newline)))
+
+        ((eq 'cond hd)
+         (gen-statement (cons 'if (cadr statement)) t nil)
+         (loop for cons on (cddr statement)
+               do (if (eq 'else (caar cons))
+                      (progn
+                        (emit " else { " 'newline 'indent)
+                        (gen-statements (cdar cons))
+                        (emit 'dedent "}")
+                        (return))
+                      (progn
+                        (emit " else if (")
+                        (gen-expr (caar cons) nil)
+                        (emit ") {" 'newline 'indent)
+                        (gen-statements (cdar cons))
+                        (emit 'dedent "}"))))
+        (if newline (emit 'newline)))
 
         ;; C-style preprocesor macros
         ((symbol= '|#ifdef| hd)

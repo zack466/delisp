@@ -5,7 +5,6 @@
 (defpackage delisp.symbols
   (:use :cl)
   (:export
-    #:|print|
     #:+
     #:-
     #:*
@@ -18,37 +17,37 @@
     #:>=
     #:<=
     #:==
-    #:|or|
-    #:|and|
-    #:|dot!|
-    #:|in|
-    #:|not|
-    #:|tuple!|
-    #:|list!|
-    #:|elt!|
-    #:|not|
+    #:or
+    #:and
+    #:dot!
+    #:in
+    #:not
+    #:tuple!
+    #:list!
+    #:elt!
+    #:not
     #:|,lisp|
     #:|,@lisp|
-    #:|if|
-    #:|cond|
-    #:|for|
-    #:|while|
-    #:|set!|
-    #:|dset!|
-    #:|declare|
+    #:if
+    #:cond
+    #:for
+    #:while
+    #:set!
+    #:dset!
+    #:declare
     #:|#declare|
     #:|#define|
     #:|#ifdef|
-    #:|inc!|
-    #:|dec!|
-    #:|mul!|
-    #:|div!|
-    #:|idiv!|
+    #:inc!
+    #:dec!
+    #:mul!
+    #:div!
+    #:idiv!
     #:|#escape|
     #:|#lisp|
-    #:|return|
-    #:|def|
-    #:|&&|
+    #:return
+    #:def
+    #:&&
     #:||
     #:!
     ))

@@ -34,17 +34,17 @@
       (if parens (emit "("))
       (cond
         ;; dot operator - equivalent to .
-        ((symbol= '|dot!| hd)
+        ((symbol= 'jdot!j hd)
          (loop for cons on (cdr expr)
                do (gen-expr (car cons))
                when (cdr cons) do (emit ".")))
         ;; not
-        ((symbol= '|!| hd)
+        ((symbol= '! hd)
          (emit "!")
          (gen-expr (cadr expr) t))
 
         ;; indexing (elt seq idx)
-        ((symbol= '|elt!| hd)
+        ((symbol= 'elt! hd)
          (gen-expr (cadr expr))
          (emit "[")
          (gen-expr (caddr expr))
@@ -78,7 +78,7 @@
       (cond
         ;; (if <cond> <body>*)
         ;; TODO: add chaining (elif)
-        ((symbol= '|if| hd)
+        ((symbol= 'if hd)
          (emit "if (")
          (gen-expr (cadr statement))
          (emit ") {" 'newline 'indent)
@@ -100,7 +100,7 @@
          (gen-expr (caddr statement))
          (emit 'newline))
         ;; (for ((init) (cond) (step)) body*)
-        ((symbol= '|for| hd)
+        ((symbol= 'for hd)
          (emit "for (")
          (gen-statement (caadr statement) t nil)
          (gen-expr (cadadr statement))
@@ -110,14 +110,14 @@
          (gen-statements (cddr statement))
          (emit 'dedent "}" 'newline))
         ;; while
-        ((symbol= '|while| hd)
+        ((symbol= 'while hd)
          (emit "while (")
          (gen-expr (cadr statement))
          (emit ") {" 'newline 'indent)
          (gen-statements (cddr statement))
          (emit 'dedent "}" 'newline))
         ;; assignment
-        ((symbol= '|set!| hd)
+        ((symbol= 'set! hd)
          (gen-expr (cadr statement))
          (emit " = ")
          (gen-expr (caddr statement))
@@ -125,7 +125,7 @@
          (if newline (emit 'newline)))
 
         ;; declare w/ a type and assignment in same statement
-        ((symbol= '|dset!| hd)
+        ((symbol= 'dset! hd)
          (gen-expr (cadr statement))
          (emit " ")
          (gen-expr (caddr statement))
@@ -135,35 +135,35 @@
          (if newline (emit 'newline)))
 
         ;; +=, -=, *=, /=, and //=
-        ((symbol= '|inc!| hd)
+        ((symbol= 'inc! hd)
          (gen-expr (cadr statement))
          (emit " += ")
          (gen-expr (caddr statement))
          (emit ";" 'newline))
-        ((symbol= '|dec!| hd)
+        ((symbol= 'dec! hd)
          (gen-expr (cadr statement))
          (emit " -= ")
          (gen-expr (caddr statement))
          (emit ";" 'newline))
-        ((symbol= '|mul!| hd)
+        ((symbol= 'mul! hd)
          (gen-expr (cadr statement))
          (emit " *= ")
          (gen-expr (caddr statement))
          (emit ";" 'newline))
-        ((symbol= '|div!| hd)
+        ((symbol= 'div! hd)
          (gen-expr (cadr statement))
          (emit " /= ")
          (gen-expr (caddr statement))
          (emit ";" 'newline))
 
         ;; return
-        ((symbol= '|return| hd)
+        ((symbol= 'return hd)
          (emit "return ")
          (gen-expr (cadr statement))
          (emit ";" 'newline))
 
         ;; declare variable/type
-        ((symbol= '|declare| hd)
+        ((symbol= 'declare hd)
          (loop for cons on (cdr statement)
                do (emit (format nil "~a" (car cons)))
                when (cdr cons) do (emit " "))
@@ -180,7 +180,7 @@
         ((symbol= '|#escape| hd)
          (mapcar #'(lambda (x) (emit x 'newline)) (cdr statement)))
         ;; (def return-type function-name ((type argname)*) body*)
-        ((symbol= '|def| hd)
+        ((symbol= 'def hd)
          (gen-function (cdr statement)))
         ;; shorthand function for common return types
         ((common-return-p hd)
@@ -198,10 +198,9 @@
          (emit ";" 'newline))))))
 
 (defun common-return-p (c)
-  (or (symbol= c '|float|) (symbol= c '|vec2|)
-      (symbol= c '|vec3|) (symbol= c '|vec4|)
-      (symbol= c '|void|) (symbol= c '|int|)
-      ))
+  (or (symbol= c 'float) (symbol= c 'vec2)
+      (symbol= c 'vec3) (symbol= c 'vec4)
+      (symbol= c 'void) (symbol= c 'int)))
 
 ;; (return-type function-name ((type argname)*) body*)
 (defun gen-function (statement)

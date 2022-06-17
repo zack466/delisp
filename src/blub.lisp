@@ -34,7 +34,7 @@
       (if parens (emit "("))
       (cond
         ;; dot operator - equivalent to .
-        ((symbol= 'jdot!j hd)
+        ((symbol= 'dot! hd)
          (loop for cons on (cdr expr)
                do (gen-expr (car cons))
                when (cdr cons) do (emit ".")))
@@ -57,19 +57,15 @@
         ((binop-p hd)
          (loop for cons on (cdr expr)
                do (gen-expr (car cons) t)
-               when (cdr cons) do (emit (format nil " ~S " hd))))
+               when (cdr cons) do (emit (format nil " ~a " (if (eq hd '||) "||" hd)))))
         ;; Function call
-        (t
-          (gen-expr hd)
-          (emit "(")
-          (loop for cons on (cdr expr)
-                do (gen-expr (car cons))
-                when (cdr cons) do (emit ", "))
-          (emit ")")))
-      (if parens (emit ")"))
-      )
-    )
-  )
+        (t (gen-expr hd)
+           (emit "(")
+           (loop for cons on (cdr expr)
+                 do (gen-expr (car cons))
+                 when (cdr cons) do (emit ", "))
+           (emit ")")))
+      (if parens (emit ")")))))
 
 (defun gen-statement (statement &optional (semicolon t) (newline t))
   (if (atom statement)

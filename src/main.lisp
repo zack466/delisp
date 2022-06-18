@@ -35,8 +35,10 @@
            (transpiler (dispatch ext)))
       (with-open-file (fout output-filename :direction :output :if-exists :supersede)
         (let ((*gen-output* fout))
-          ;; (in-package :delisp.symbols) ;; read in with correct symbols
+          (in-package :delisp.symbols) ;; read in with correct symbols
           (setf (readtable-case *readtable*) :invert)
-          (setf lisp-code (uiop:with-safe-io-syntax (:package :delisp.symbols) (uiop:read-file-forms filename)))
+          ;; unfortunately with-safe-io-syntax seems to do weird things to the readtable, so screw safety I guess
+          ;; (setf lisp-code (uiop:with-safe-io-syntax (:package :delisp.symbols) (uiop:read-file-forms filename)))
+          (setf lisp-code (uiop:read-file-forms filename))
           (in-package :cl-user) ;; execute in user environment, not :delisp.symbols
           (funcall transpiler lisp-code))))))

@@ -69,7 +69,7 @@ To insert lisp code into your program, you can insert a single lisp statement/ex
 Here is an example:
 ```clojure
 (|#lisp|
-  (setf code (loop for i from 1 to 5 collect (list 'print i))))
+  (setf code (loop for i from 1 to 5 collect `(print ,i))))
 
 (|,@lisp| code)
 ```

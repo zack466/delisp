@@ -23,7 +23,8 @@
       (eq op '%) (eq op '==)
       (eq op '<) (eq op '<=)
       (eq op '>) (eq op '>=)
-      (eq op '&&) (eq op '||)))
+      (eq op '&&) (eq op '||)
+      (eq op '!=)))
 
 (defun gen-expr (expr &optional (parens nil))
   (if (atom expr)
@@ -43,6 +44,17 @@
         ;; not
         ((symbol= '! hd)
          (emit "!")
+         (gen-expr (cadr expr) t))
+        
+        ;; pointer stuff
+        ;; note that you can also just put * or & in front of a name
+        ;; and it will remain a valid symbol (thanks common lisp!)
+        ((symbol= 'ptr! hd)
+         (emit "*")
+         (gen-expr (cadr expr) t))
+
+        ((symbol= 'addr! hd)
+         (emit "&")
          (gen-expr (cadr expr) t))
 
         ;; indexing (elt seq idx)

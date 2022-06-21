@@ -17,6 +17,7 @@
     #:>=
     #:<=
     #:==
+    #:!=
     #:or
     #:and
     #:dot!
@@ -51,6 +52,8 @@
     #:&&
     #:||
     #:!
+    #:ptr!
+    #:addr!
     ))
 
 ;; (asdf:load-system :delisp)

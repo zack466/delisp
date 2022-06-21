@@ -21,7 +21,8 @@
       (eq op '%) (eq op '==)
       (eq op '<) (eq op '<=)
       (eq op '>) (eq op '>=)
-      (eq op 'or) (eq op 'and)))
+      (eq op 'or) (eq op 'and)
+      (eq op '!=)))
 
 (defun gen-expr (expr &optional (parens t))
   (if (atom expr)

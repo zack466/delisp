@@ -54,6 +54,13 @@
     #:!
     #:ptr!
     #:addr!
+    #:arrow!
+    #:>>
+    #:<<
+    #:or!
+    #:and!
+    #:xor!
+    #:cast!
     ))
 
 ;; (asdf:load-system :delisp)

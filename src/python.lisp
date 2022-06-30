@@ -26,10 +26,11 @@
 
 (defun gen-expr (expr &optional (parens t))
   (if (atom expr)
-    (if (stringp expr)
-        (emit (format nil "\"~a\"" expr)) 
-        (emit (format nil "~a" expr)))
-    (let ((hd (car expr)))
+      (cond ((stringp expr) (emit (format nil "\"~a\"" expr))) 
+            ((floatp expr) (emit (format nil "~f" expr)))
+            ((null expr))
+            (t (emit (format nil "~a" expr))))
+      (let ((hd (car expr)))
       (cond
         ;; dot operator - equivalent to .
         ((eq 'dot! hd)
@@ -96,7 +97,7 @@
     (emit "~S" statement)
     (let ((hd (car statement)))
       (cond
-        ;; (if <cond> <body>*)
+        ;; (if <cond> (<body>*))
         ((eq 'if hd)
          (emit "if ")
          (gen-expr (cadr statement) nil)
@@ -111,7 +112,7 @@
          (loop for cons on (cddr statement)
                do (if (eq 'else (caar cons))
                       (progn
-                        (emit "else: " 'newline 'indent)
+                        (emit "else:" 'newline 'indent)
                         (gen-statements (cdar cons))
                         (emit 'dedent)
                         (return))

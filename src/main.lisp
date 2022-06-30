@@ -19,10 +19,15 @@
     (declare (ignore first))
     second))
 
+(defpackage delisp.user
+  (:use :cl :delisp.symbols))
+
+(in-package :delisp)
+
 ;; TODO: add error handling
 ;; TODO: make each lang more modular using some sort of meta-language
 ;; TODO: allow defining utility functions accessible in every X.Y.lisp file (and sort out environment/package problems)
-;; TODO: export language symbols so we can use eq instead of comparing the string value of symbols
+;; TODO: write custom parser for better handling of case-sensitivity and better errors (ex: traceback, line in which error occurs)
 (defun main ()
   (multiple-value-bind (options free-args) (opts:get-opts)
     (declare (ignore options))
@@ -34,11 +39,11 @@
            (ext (second-value (uiop:split-name-type output-filename)))
            (transpiler (dispatch ext)))
       (with-open-file (fout output-filename :direction :output :if-exists :supersede)
-        (let ((*gen-output* fout))
-          (in-package :delisp.symbols) ;; read in with correct symbols
+        (let ((*gen-output* fout)
+              (lisp-code nil))
+          (in-package :delisp.user)
           (setf (readtable-case *readtable*) :invert)
           ;; unfortunately with-safe-io-syntax seems to do weird things to the readtable, so screw safety I guess
           ;; (setf lisp-code (uiop:with-safe-io-syntax (:package :delisp.symbols) (uiop:read-file-forms filename)))
           (setf lisp-code (uiop:read-file-forms filename))
-          (in-package :cl-user) ;; execute in user environment, not :delisp.symbols
           (funcall transpiler lisp-code))))))

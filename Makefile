@@ -8,3 +8,7 @@ interactive:
 build:
 	sbcl --eval '(asdf:make :delisp)' \
 		--eval '(quit)'
+
+test:
+	sbcl --eval '(asdf:test-system :delisp)' \
+		--eval '(quit)'

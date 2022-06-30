@@ -9,7 +9,7 @@
                  (:file "symbols")
                  (:file "python" :depends-on ("printer" "symbols"))
                  (:file "blub" :depends-on ("printer" "symbols"))
-                 (:file "main" :depends-on ("python" "blub" "symbols")))))
+                 (:file "main" :depends-on ("python" "blub")))))
   :description ""
   :build-operation "program-op"
   :build-pathname "bin/delisp"
@@ -19,10 +19,9 @@
 (defsystem "delisp/tests"
   :author ""
   :license ""
-  :depends-on ("delisp"
-               "rove")
+  :depends-on ("delisp" "cl-ppcre")
   :components ((:module "tests"
                 :components
-                ((:file "main"))))
-  :description "Test system for delisp"
-  :perform (test-op (op c) (symbol-call :rove :run c)))
+                ((:file "main")
+                 (:file "python"))))
+  :description "Test system for delisp")

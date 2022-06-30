@@ -24,54 +24,72 @@
       (eq op '<) (eq op '<=)
       (eq op '>) (eq op '>=)
       (eq op '&&) (eq op '||)
-      (eq op '!=)))
+      (eq op '>>) (eq op '<<)
+      (eq op 'and!) (eq op 'or!)
+      (eq op 'xor!) (eq op '!=)))
 
 (defun gen-expr (expr &optional (parens nil))
   (if (atom expr)
-    (if (stringp expr)
-        (emit (format nil "\"~a\"" expr)) 
-        (if (floatp expr)
-            (emit (format nil "~f" expr))
-            (emit (format nil "~a" expr))))
-    (let ((hd (car expr)))
+      (cond ((stringp expr) (emit (format nil "\"~a\"" expr))) 
+            ((floatp expr) (emit (format nil "~f" expr)))
+            ((null expr))
+            (t (emit (format nil "~a" expr))))
+      (let ((hd (car expr)))
       (if parens (emit "("))
       (cond
         ;; dot operator - equivalent to .
-        ((symbol= 'dot! hd)
+        ((eq 'dot! hd)
          (loop for cons on (cdr expr)
                do (gen-expr (car cons))
                when (cdr cons) do (emit ".")))
+        ((eq 'arrow! hd)
+         (loop for cons on (cdr expr)
+               do (gen-expr (car cons))
+               when (cdr cons) do (emit "->")))
+
+        ((eq 'cast! hd)
+         (emit "(")
+         (gen-expr (cadr expr) t)
+         (emit ")")
+         (gen-expr (caddr expr) t))
+        
         ;; not
-        ((symbol= '! hd)
+        ((eq '! hd)
          (emit "!")
          (gen-expr (cadr expr) t))
         
         ;; pointer stuff
         ;; note that you can also just put * or & in front of a name
         ;; and it will remain a valid symbol (thanks common lisp!)
-        ((symbol= 'ptr! hd)
+        ((eq 'ptr! hd)
          (emit "*")
          (gen-expr (cadr expr) t))
 
-        ((symbol= 'addr! hd)
+        ((eq 'addr! hd)
          (emit "&")
          (gen-expr (cadr expr) t))
 
         ;; indexing (elt seq idx)
-        ((symbol= 'elt! hd)
+        ((eq 'elt! hd)
          (gen-expr (cadr expr))
          (emit "[")
          (gen-expr (caddr expr))
          (emit "]"))
 
-        ((symbol= '|,lisp| hd)
+        ((eq '|,lisp| hd)
          (gen-expr (eval (cons 'progn (cdr expr)))))
 
         ;; Binary operator (with parentheses to enforce precedence)
         ((binop-p hd)
          (loop for cons on (cdr expr)
                do (gen-expr (car cons) t)
-               when (cdr cons) do (emit (format nil " ~a " (if (eq hd '||) "||" hd)))))
+               when (cdr cons) do
+               (emit (format nil " ~a " (cond
+                                          ((eq hd '||) "||")
+                                          ((eq hd 'and!) "&")
+                                          ((eq hd 'or!) "|")
+                                          ((eq hd 'xor!) "^")
+                                          (t hd))))))
         ;; Function call
         (t (gen-expr hd)
            (emit "(")
@@ -87,7 +105,7 @@
     (let ((hd (car statement)))
       (cond
         ;; (if <cond> <body>*)
-        ((symbol= 'if hd)
+        ((eq 'if hd)
          (emit "if (")
          (gen-expr (cadr statement))
          (emit ") {" 'newline 'indent)
@@ -113,21 +131,21 @@
         (if newline (emit 'newline)))
 
         ;; C-style preprocesor macros
-        ((symbol= '|#ifdef| hd)
+        ((eq '|#ifdef| hd)
          (emit "#ifdef ")
          (gen-expr (cadr statement))
          (emit 'newline)
          (gen-statements (cddr statement))
          (emit "#endif" 'newline))
 
-        ((symbol= '|#define| hd)
+        ((eq '|#define| hd)
          (emit "#define ")
          (gen-expr (cadr statement))
          (emit " ")
          (gen-expr (caddr statement))
          (emit 'newline))
         ;; (for ((init) (cond) (step)) body*)
-        ((symbol= 'for hd)
+        ((eq 'for hd)
          (emit "for (")
          (gen-statement (caadr statement) t nil)
          (gen-expr (cadadr statement))
@@ -137,14 +155,14 @@
          (gen-statements (cddr statement))
          (emit 'dedent "}" 'newline))
         ;; while
-        ((symbol= 'while hd)
+        ((eq 'while hd)
          (emit "while (")
          (gen-expr (cadr statement))
          (emit ") {" 'newline 'indent)
          (gen-statements (cddr statement))
          (emit 'dedent "}" 'newline))
         ;; assignment
-        ((symbol= 'set! hd)
+        ((eq 'set! hd)
          (gen-expr (cadr statement))
          (emit " = ")
          (gen-expr (caddr statement))
@@ -152,7 +170,7 @@
          (if newline (emit 'newline)))
 
         ;; declare w/ a type and assignment in same statement
-        ((symbol= 'dset! hd)
+        ((eq 'dset! hd)
          (gen-expr (cadr statement))
          (emit " ")
          (gen-expr (caddr statement))
@@ -162,28 +180,28 @@
          (if newline (emit 'newline)))
 
         ;; +=, -=, *=, /=, and //=
-        ((symbol= 'inc! hd)
+        ((eq 'inc! hd)
          (gen-expr (cadr statement))
          (emit " += ")
          (gen-expr (caddr statement))
          (if semicolon (emit ";"))
          (if newline (emit 'newline)))
 
-        ((symbol= 'dec! hd)
+        ((eq 'dec! hd)
          (gen-expr (cadr statement))
          (emit " -= ")
          (gen-expr (caddr statement))
          (if semicolon (emit ";"))
          (if newline (emit 'newline)))
 
-        ((symbol= 'mul! hd)
+        ((eq 'mul! hd)
          (gen-expr (cadr statement))
          (emit " *= ")
          (gen-expr (caddr statement))
          (if semicolon (emit ";"))
          (if newline (emit 'newline)))
 
-        ((symbol= 'div! hd)
+        ((eq 'div! hd)
          (gen-expr (cadr statement))
          (emit " /= ")
          (gen-expr (caddr statement))
@@ -191,13 +209,13 @@
          (if newline (emit 'newline)))
 
         ;; return
-        ((symbol= 'return hd)
+        ((eq 'return hd)
          (emit "return ")
          (gen-expr (cadr statement))
          (emit ";" 'newline))
 
         ;; declare variable/type
-        ((symbol= 'declare hd)
+        ((eq 'declare hd)
          (loop for cons on (cdr statement)
                do (emit (format nil "~a" (car cons)))
                when (cdr cons) do (emit " "))
@@ -205,16 +223,16 @@
          (if newline (emit 'newline)))
 
         ;; useful for preprocesor macros
-        ((symbol= '|#declare| hd)
+        ((eq '|#declare| hd)
          (loop for cons on (cdr statement)
                do (emit (format nil "~a" (car cons)))
                when (cdr cons) do (emit " "))
          (if newline (emit 'newline)))
         ;; escape arbitrary strings
-        ((symbol= '|#escape| hd)
+        ((eq '|#escape| hd)
          (mapcar #'(lambda (x) (emit x 'newline)) (cdr statement)))
         ;; (def return-type function-name ((type argname)*) body*)
-        ((symbol= 'def hd)
+        ((eq 'def hd)
          (gen-function (cdr statement)))
         ;; shorthand function for common return types
         ((common-return-p hd)
@@ -232,9 +250,9 @@
          (emit ";" 'newline))))))
 
 (defun common-return-p (c)
-  (or (symbol= c 'float) (symbol= c 'vec2)
-      (symbol= c 'vec3) (symbol= c 'vec4)
-      (symbol= c 'void) (symbol= c 'int)))
+  (or (eq c 'float) (eq c 'vec2)
+      (eq c 'vec3) (eq c 'vec4)
+      (eq c 'void) (eq c 'int)))
 
 ;; (return-type function-name ((type argname)*) body*)
 (defun gen-function (statement)

@@ -3,20 +3,26 @@
 (defpackage delisp.printer
   (:use :cl)
   (:export
-    #:*gen-output*
+    #:*output*
     #:*printer*
     #:printer
     #:emit
-    #:symbol=))
+    #:symbol=
+    #:*indent*
+    #:make-keyword
+    ))
 
 (in-package :delisp.printer)
 
-(defvar *gen-output* t)
+;; defaults
+(defvar *output* t)
 
 (defun symbol= (a b)
   (if (and (symbolp a) (symbolp b))
       (string= (symbol-name a) (symbol-name b))
       nil))
+
+(defun make-keyword (name) (values (intern (string-upcase name) "KEYWORD")))
 
 ;; printing instructions are any of:
 ;; - a string literal
@@ -30,12 +36,12 @@
       (cond
         ((stringp i)
          (when need-to-indent
-           (format *gen-output* "~a" (make-string (* indent-size indent-level) :initial-element #\Space))
+           (format *output* "~a" (make-string (* indent-size indent-level) :initial-element #\Space))
            (setf need-to-indent nil))
-         (format *gen-output* "~a" i))
-        ((symbol= 'indent i) (incf indent-level))
-        ((symbol= 'dedent i) (decf indent-level))
-        ((symbol= 'newline i) (format *gen-output* "~%") (setf need-to-indent t))
+         (format *output* "~a" i))
+        ((eq :indent i) (incf indent-level))
+        ((eq :dedent i) (decf indent-level))
+        ((eq :newline i) (format *output* "~%") (setf need-to-indent t))
         (t (error "Unsupported printer instruction: ~S~%" i))))))
 
 (defvar *printer* (printer 4))

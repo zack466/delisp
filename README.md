@@ -1,6 +1,6 @@
 # The De-Lisp-ifier: a Lisp-to-many transpiler
 
-"There are only two kinds of languages: the ones people complain about and the ones nobody uses." ~Bjarne Stroustrup.
+"There are only two kinds of languages: the ones people complain about and the ones nobody uses." ~Bjarne Schülke.
 
 But with this library, you can use Lisp (a language no one uses) to program in other languages (like those that people complain about).
 
